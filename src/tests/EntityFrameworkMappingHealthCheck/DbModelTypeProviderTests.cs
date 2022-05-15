@@ -1,54 +1,68 @@
-using lib.EntityFrameworkMappingHealthCheck;
+using BetterHealthChecks;
+using BetterHealthChecks.EntityFrameworkMappingHealthCheck;
 using Microsoft.EntityFrameworkCore;
 
 namespace tests.EntityFrameworkMappingHealthCheck;
 
 public class DbModelTypeProviderTests
 {
-  [Fact]
-  public void GetDbModelTypes_PassedContextIsNull_ThrowsArgumentNullException()
-  {
-    // Arrange
-    var typeProvider = new DbModelTypeProvider();
+    [Fact]
+    public void GetDbModelTypes_PassedContextHasProperties_ReturnsDbSetProperties()
+    {
+        // Arrange
+        var typeProvider = new DbModelTypeProvider();
 
-    // Act
-    Assert.Throws<ArgumentNullException>(() => typeProvider.GetDbModelTypes(null));
-  }
+        var expectedTypes = new List<Type> { typeof(Student), typeof(Teacher) };
 
-  [Fact]
-  public void GetDbModelTypes_PassedContextHasProperties_ReturnsDbSetProperties()
-  {
-    // Arrange
-    var typeProvider = new DbModelTypeProvider();
+        // Act
+        var foundTypes = typeProvider.GetDbModelTypes<TestDbContext1>();
 
-    var expectedTypes = new List<Type> { typeof(Student), typeof(Teacher) };
+        // Assert
+        foundTypes.Should().BeEquivalentTo(expectedTypes);
+    }
 
-    // Act
-    var foundTypes = typeProvider.GetDbModelTypes(new TestDbContext());
+    [Fact]
+    public void GetDbModelTypes_DbContextHasHealthCheckIgnore_ReturnsDbSetWithoutIgnore()
+    {
+        // Arrange
+        var typeProvider = new DbModelTypeProvider();
 
-    // Assert
-    foundTypes.Should().BeEquivalentTo(expectedTypes);
-  }
+        var expectedTypes = new List<Type> { typeof(Student) };
 
-  private class TestDbContext
-  {
-    public int NotADbModel { get; set; }
-    public string AlsoNotADbModel { get; set; }
-    public DbSet<Teacher> Teachers { get; set; }
-    public dynamic StillNotADbModel { get; set; }
-    public DbSetNot NotADbSet { get; set; }
-    public DbSet<Student> Students { get; set; }
-  }
+        // Act
+        var foundTypes = typeProvider.GetDbModelTypes<TestDbContext2>();
 
-  private class DbSetNot { }
+        // Assert
+        foundTypes.Should().BeEquivalentTo(expectedTypes);
+    }
 
-  private class Student
-  {
-    public int Id { get; set; }
-  }
+    private class TestDbContext1 : DbContext
+    {
+        public int NotADbModel { get; set; }
+        public string AlsoNotADbModel { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public dynamic StillNotADbModel { get; set; }
+        public DbSetNot NotADbSet { get; set; }
+        public DbSet<Student> Students { get; set; }
+    }
 
-  private class Teacher
-  {
-    public int Id { get; set; }
-  }
+    private class TestDbContext2 : DbContext
+    {
+        public DbSet<Student> Students { get; set; }
+
+        [HealthCheckIgnore]
+        public DbSet<Teacher> IgnoredTeachers { get; set; }
+    }
+
+    private class DbSetNot { }
+
+    private class Student
+    {
+        public int Id { get; set; }
+    }
+
+    private class Teacher
+    {
+        public int Id { get; set; }
+    }
 }

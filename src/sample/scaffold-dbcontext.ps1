@@ -1,0 +1,1 @@
+dotnet ef dbcontext scaffold "Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=HealthCheckSample" Microsoft.EntityFrameworkCore.SqlServer --context SampleDbContext --context-dir Database --output-dir Database/Models --force
