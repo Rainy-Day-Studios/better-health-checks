@@ -1,3 +1,5 @@
+CREATE DATABASE HealthCheckSample
+
 CREATE TABLE Teacher (
 	[Id] INT NOT NULL PRIMARY KEY,
 	[FirstName] NVARCHAR(256) NOT NULL,
